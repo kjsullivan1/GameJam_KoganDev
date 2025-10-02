@@ -13,22 +13,23 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
     public class LevelBuilder
     {
         // 9x15 game size // will need to place either the map or the camera to position the game in the middle of view 
-        int gameCols = 9; // size of the game view 
+        int gameCols = 15; // size of the game view 
         int gameRows = 15; // size of the game view 
 
-        int[,] gameMap;
+        public int[,] gameMap;
 
         int groundTileIndex = 1;
         int platformTileIndex = 2;
 
         int maxPlatforms = 5;
+        int minPlatforms = 4;
         
         Random random = new Random();
         bool isJumpable = false;
 
         bool checkRow = false;
    
-        int minOpenings = 2;
+        int minOpenings = 5;
         int numOpenings = 0;
 
 
@@ -75,6 +76,7 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
                 {
 
                     List<Rectangle> prevRow = new List<Rectangle>(currRow);
+                    numPlatforms = 0;
                     CreateRow(currRow, ref platformChance, ref numPlatforms, y);
                     rowsMade++;
                     checkRow = true;
@@ -143,6 +145,14 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
                                 numOpenings++;
                                 doesRemake = true;
                             }
+                            else if(numOpenings >= minOpenings)
+                            {
+                                doesRemake = false;
+                                for (int i = 0; i < currRow.Count; i++)
+                                {
+                                    gameMap[y, (currRow[i].X / 64)] = platformTileIndex;
+                                }
+                            }
 
                             
                         }
@@ -153,6 +163,10 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
                 {
                     CreateRow(currRow, ref platformChance, ref numPlatforms, y);
                     rowsMade++;
+                    for(int i = 0; i < currRow.Count; i++)
+                    {
+                        gameMap[y, (currRow[i].X / 64)] = platformTileIndex;
+                    }
                 }
 
               
@@ -169,15 +183,15 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
             {
                 if(openUpRight)
                 {
-                    points += 4; // if open up and to the sides while the top is blocked, not bad but not good
+                    points += 3; // if open up and to the sides while the top is blocked, not bad but not good
                 }
                 if(openUpLeft)
                 {
-                    points += 4;
+                    points += 3;
                 }
                 if(openLeft && openUpLeft) // open on the sides AND above (on the sides) is optimal, guranteeing success
                 {
-                    points += 7;
+                    points += 6 ;
                 }
                 else if(openLeft) // just being open on the side isn't the best, but can still create opportunities given the chance
                 {
@@ -185,7 +199,7 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
                 }
                 if (openRight && openUpRight)// open on the sides AND above (on the sides) is optimal, guranteeing success
                 {
-                    points += 7;
+                    points += 6;
                 }
                 else if(openRight)// just being open on the side isn't the best, but can still create opportunities given the chance
                 {
@@ -193,7 +207,7 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
                 }
 
             }
-            else
+            else // Open Up == true
             {
                 if(!openRight && !openLeft) // Least optimal, but can sometimes create opportunities
                 {
@@ -203,31 +217,31 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
                 {
                     if(openUpRight)
                     {
-                        points += 7; // Most optimal being open on all sides on the right 
+                        points += 6; // Most optimal being open on all sides on the right 
                     }
                     else
                     {
-                        points += 4;
+                        points += 3;
                     }
                 }
                 else if(openUpRight)
                 {
-                    points += 4;
+                    points += 3;
                 }
                 if (openLeft)
                 {
                     if(openUpLeft)
                     {
-                        points += 7;
+                        points += 6;
                     }
                     else
                     {
-                        points += 4;
+                        points += 3;
                     }
                 }
                 else if(openUpLeft)
                 {
-                    points += 4;
+                    points += 3;
                 }
             }
 
@@ -244,28 +258,57 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
         {
             int i = 0;
             currRow.Clear();
-            while(numPlatforms < 3 || i < 8)
+            if(random.Next(101) > 50)
             {
-                for (i = 1; i < 8; i++)
+                while (numPlatforms < minPlatforms || i < gameCols - 1)
                 {
-                    if (random.Next(101) <= platformChance && numPlatforms < maxPlatforms && currRow.Contains(new Rectangle(i * 64, (y * 64), 64, 64)) == false)
+                    for (i = 1; i < gameCols - 1; i++)
                     {
-                        gameMap[y, i] = platformTileIndex;
-                        currRow.Add(new Rectangle(i * 64, (y * 64), 64, 64));
-                        numPlatforms++;
+                        if (random.Next(101) <= platformChance && numPlatforms < maxPlatforms && currRow.Contains(new Rectangle(i * 64, (y * 64), 64, 64)) == false)
+                        {
+                            //gameMap[y, i] = platformTileIndex;
+                            currRow.Add(new Rectangle(i * 64, (y * 64), 64, 64));
+                            numPlatforms++;
+                            platformChance = 20;
 
-                        
+                        }
+                    }
+                    if (platformChance >= 20)
+                    {
+                        platformChance -= 45;
+                    }
+                    else
+                    {
+                        platformChance = 85;
                     }
                 }
-                if (platformChance >= 20)
+            }
+            else
+            {
+                while (numPlatforms < minPlatforms || i > 1)
                 {
-                    platformChance -= 25;
-                }
-                else
-                {
-                    platformChance = 85;
+                    for (i = gameCols - 2; i > 0; i--)
+                    {
+                        if (random.Next(101) <= platformChance && numPlatforms < maxPlatforms && currRow.Contains(new Rectangle(i * 64, (y * 64), 64, 64)) == false)
+                        {
+                            //gameMap[y, i] = platformTileIndex;
+                            currRow.Add(new Rectangle(i * 64, (y * 64), 64, 64));
+                            numPlatforms++;
+                            platformChance = 20;
+
+                        }
+                    }
+                    if (platformChance >= 20)
+                    {
+                        platformChance -= 45;
+                    }
+                    else
+                    {
+                        platformChance = 85;
+                    }
                 }
             }
+            
 
             
         }

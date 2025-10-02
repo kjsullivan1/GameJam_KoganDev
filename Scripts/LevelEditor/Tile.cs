@@ -68,18 +68,29 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
 
     class PlatformTile : Tile
     {
-        public PlatformTile(int[] spawnPoints, Rectangle rect)
+        Random rand = new Random();
+        public int health;
+        List<Texture2D> textures = new List<Texture2D>();
+        public PlatformTile(int i, Rectangle rect)
         {
-            this.mapPoint = spawnPoints;
+            texture = Content.Load<Texture2D>("MapTiles/Tile" + i);
             this.Rectangle = rect;
+            health = rand.Next(2, 4);
+            switch(health) // based on health, load in broken tiles
+            {
+                case 2:
+                    break;
+                case 3:
+                    break;
+            }
         }
     }
 
     class GroundTile : Tile
     {
-        public GroundTile(int[] spawnPoints, Rectangle rect)
+        public GroundTile(int i, Rectangle rect)
         {
-            this.mapPoint = spawnPoints;
+            texture = Content.Load<Texture2D>("MapTiles/Tile" + i);
             this.Rectangle = rect;
         }
     }
