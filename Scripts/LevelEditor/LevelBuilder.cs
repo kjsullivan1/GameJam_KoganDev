@@ -1,12 +1,8 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Button;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using Microsoft.Xna.Framework;
 
 namespace GameJam_KoganDev.Scripts.LevelEditor
 {
@@ -14,7 +10,7 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
     {
         // 9x15 game size // will need to place either the map or the camera to position the game in the middle of view 
         int gameCols = 15; // size of the game view 
-        int gameRows = 15; // size of the game view 
+        int gameRows = 17; // size of the game view 
 
         public int[,] gameMap;
 
@@ -23,6 +19,7 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
 
         int maxPlatforms = 5;
         int minPlatforms = 4;
+       
         
         Random random = new Random();
         bool isJumpable = false;
@@ -31,6 +28,18 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
    
         int minOpenings = 5;
         int numOpenings = 0;
+
+       
+
+        public List<Vector2> itemSpawns = new List<Vector2>();
+        public List<Vector2> itemSpawnCollection = new List<Vector2>();
+        public int maxItems = 3;
+        public int numItems = 3;
+
+        //public Dictionary<string, List<Rectangle>> items = new Dictionary<string, List<Rectangle>>();
+        public List<Rectangle> dashItems = new List<Rectangle>();
+        public List<Rectangle> powerJumpItems = new List<Rectangle>();
+        public List<Rectangle> createItems = new List<Rectangle>();
 
 
         public LevelBuilder()
@@ -43,17 +52,199 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
             gameMap = new int[gameRows, gameCols];
         }
 
-        public void StartLevel(int level)
+        public void DetermineItemSpawns(int yOffset)
+        {
+            List<Vector2> temp = new List<Vector2>(itemSpawns);
+            for (int y = 1; y < gameMap.GetLength(0); y++)
+            {
+                for (int x = 0; x < gameMap.GetLength(1); x++)
+                {
+                    if (gameMap[y, x] == 2 && gameMap[y - 1, x] != 2)
+                    {
+                        temp.Add(new Vector2(x, y));
+                    }
+                }
+            }
+            itemSpawns.Clear();
+            for (int i = 0; i < maxItems; i++)
+            {
+                itemSpawns.Add(temp[random.Next(0, temp.Count)]);
+                itemSpawnCollection.Add(itemSpawns[itemSpawns.Count - 1]);
+            }
+
+            if(maxItems > 3)
+            {
+
+            }
+            else
+            {
+                List<int> spawnOrder = new List<int>();
+
+                while(true)
+                {
+                    int num = random.Next(0, numItems);
+                    if(spawnOrder.Contains(num) == false)
+                    {
+                        spawnOrder.Add(num);
+                    }
+
+                    if (spawnOrder.Count == numItems)
+                        break;
+                }
+
+                for (int i = 0; i < spawnOrder.Count; i++)
+                {
+                    switch (spawnOrder[i])
+                    {
+                        case 0: //create 
+                            createItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+                            break;
+                        case 1: // dash
+                            dashItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+                            break;
+                        case 2://power jump
+                            powerJumpItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+                            break;
+                    }
+                }
+
+               
+
+            }
+
+        }
+
+
+        public void StartLevel(int level, int yOffset)
         {
             switch(level)
             {
-                default:
-                    CreateStart(level);
+                case 0:
+                    CreateStart();
+                    DetermineItemSpawns(yOffset);
                     break;
             }
         }
 
-        void CreateStart(int level)
+        public void CreateNewSection(int yOffset)
+        {
+            gameMap = new int[gameRows, gameCols];
+
+            List<Rectangle> currRow = new List<Rectangle>(); //represents the platform tiles on the row that is "currently" being made
+            int platformChance = 80;
+            int numPlatforms = 0;
+
+            bool doesRemake = true;
+            int rowsMade = 0;
+            for (int y = gameRows - 1; y >= 0; y--) //Start from the 3 row from the bottom going completely right, then up one row 
+            {
+
+                doesRemake = true;
+                numOpenings = 0;
+                numPlatforms = 0;
+                while (doesRemake)
+                {
+
+                    List<Rectangle> prevRow = new List<Rectangle>(currRow);
+                    numPlatforms = 0;
+                    CreateRow(currRow, ref platformChance, ref numPlatforms, y);
+                    rowsMade++;
+                    checkRow = true;
+                    if (checkRow && rowsMade >= 2)
+                    {
+
+                        foreach (Rectangle prevPlatform in prevRow)
+                        {
+                            bool openUp = true;
+                            bool openUpLeft = true;
+                            bool openUpRight = true;
+                            bool openRight = true;
+                            bool openLeft = true;
+
+                            Dictionary<string, Rectangle> checkRects = new Dictionary<string, Rectangle>();
+                            checkRects.Add("Up", new Rectangle(prevPlatform.X, prevPlatform.Y - prevPlatform.Height, prevPlatform.Width, prevPlatform.Height));
+                            checkRects.Add("UpRight", new Rectangle(prevPlatform.Right, prevPlatform.Y - prevPlatform.Height, prevPlatform.Width, prevPlatform.Height));
+                            checkRects.Add("UpLeft", new Rectangle(prevPlatform.X - prevPlatform.Width, prevPlatform.Y - prevPlatform.Height, prevPlatform.Width, prevPlatform.Height));
+                            checkRects.Add("Left", new Rectangle(prevPlatform.X - prevPlatform.Width, prevPlatform.Y, prevPlatform.Width, prevPlatform.Height));
+                            checkRects.Add("Right", new Rectangle(prevPlatform.Right, prevPlatform.Y, prevPlatform.Width, prevPlatform.Height));
+
+
+                            for (int i = 0; i < currRow.Count; i++)
+                            {
+                                int z = 0;
+                                foreach (Rectangle rect in checkRects.Values)
+                                {
+                                    if (rect == currRow[i])
+                                    {
+                                        switch (z)
+                                        {
+                                            case 0: // if Up
+                                                openUp = false;
+                                                break;
+                                            case 1:
+                                                openUpRight = false;
+                                                break;
+                                            case 2:
+                                                openUpLeft = false;
+                                                break;
+                                            case 3:
+                                                openLeft = false;
+                                                break;
+                                            case 4:
+                                                openRight = false;
+                                                break;
+                                        }
+                                    }
+                                    z++;
+                                }
+                                //if (checkRects.Values.Contains(currRow[i]))
+                                //{
+
+                                //}
+                                //else
+                                //{
+                                //    z++;
+                                //}
+                            }
+
+
+                            doesRemake = DetermineRemake(openUp, openUpRight, openUpLeft, openLeft, openRight);
+
+                            if (!doesRemake && numOpenings < minOpenings)
+                            {
+                                numOpenings++;
+                                doesRemake = true;
+                            }
+                            else if (numOpenings >= minOpenings)
+                            {
+                                doesRemake = false;
+                                for (int i = 0; i < currRow.Count; i++)
+                                {
+                                    gameMap[y, (currRow[i].X / 64)] = platformTileIndex;
+                                }
+                            }
+
+
+                        }
+
+                    }
+                }
+                //if (rowsMade == 0)
+                //{
+                //    CreateRow(currRow, ref platformChance, ref numPlatforms, y);
+                //    rowsMade++;
+                //    for (int i = 0; i < currRow.Count; i++)
+                //    {
+                //        gameMap[y, (currRow[i].X / 64)] = platformTileIndex;
+                //    }
+                //}
+
+
+            }
+            DetermineItemSpawns(yOffset);
+        }
+
+        void CreateStart()
         {
             List<Rectangle> currRow = new List<Rectangle>(); //represents the platform tiles on the row that is "currently" being made
             int platformChance = 80;
@@ -69,6 +260,7 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
             int rowsMade = 0;
             for (int y = gameRows - 3; y >= 0; y--) //Start from the 3 row from the bottom going completely right, then up one row 
             {
+              
                 doesRemake = true;
                 numOpenings = 0;
                 numPlatforms = 0;
@@ -311,6 +503,22 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
             
 
             
+        }
+
+        public void DrawItems(SpriteBatch spriteBatch, ContentManager content)
+        {
+            foreach(Rectangle rect in createItems)
+            {
+                spriteBatch.Draw(content.Load<Texture2D>("MapTiles/CreateItem"),rect, Color.White);
+            }
+            foreach(Rectangle rectangle in dashItems)
+            {
+                spriteBatch.Draw(content.Load<Texture2D>("MapTiles/DashItem"), rectangle, Color.White);
+            }
+            foreach (Rectangle rectangle in powerJumpItems)
+            {
+                spriteBatch.Draw(content.Load<Texture2D>("MapTiles/PowerJumpItem"), rectangle, Color.White);
+            }
         }
     }
 }

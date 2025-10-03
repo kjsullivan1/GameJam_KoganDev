@@ -70,18 +70,48 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
     {
         Random rand = new Random();
         public int health;
+        int dmgTaken = 0;
         List<Texture2D> textures = new List<Texture2D>();
+        public bool isBroken = false;
+        
         public PlatformTile(int i, Rectangle rect)
         {
-            texture = Content.Load<Texture2D>("MapTiles/Tile" + i);
+            //texture = Content.Load<Texture2D>("MapTiles/Tile" + i);
             this.Rectangle = rect;
+            //textures.Add(texture);
             health = rand.Next(2, 4);
+
+
             switch(health) // based on health, load in broken tiles
             {
                 case 2:
+                    textures.Add(Content.Load<Texture2D>("MapTiles/Tile" + i + "_" + 1));
+                    textures.Add(Content.Load<Texture2D>("MapTiles/Tile" + i + "_" + 2));
+
+                    texture = textures[0];
                     break;
                 case 3:
+                    textures.Add(Content.Load<Texture2D>("MapTiles/Tile" + i));
+                    textures.Add(Content.Load<Texture2D>("MapTiles/Tile" + i + "_" + 1));
+                    textures.Add(Content.Load<Texture2D>("MapTiles/Tile" + i + "_" + 2));
+
+                    texture = textures[0];
                     break;
+            }
+        }
+
+        public void TakeDamage()
+        {
+            dmgTaken++;
+            if(dmgTaken < health)
+            {
+                texture = textures[dmgTaken];
+            }
+            else
+            {
+                health = 0;
+                dmgTaken = 0;
+                isBroken = true;
             }
         }
     }
@@ -94,4 +124,6 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
             this.Rectangle = rect;
         }
     }
+
+    
 }

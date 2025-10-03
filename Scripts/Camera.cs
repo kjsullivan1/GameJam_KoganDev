@@ -20,6 +20,7 @@ namespace GameJam_KoganDev.Scripts
         public Vector2 Position
         {
             get { return center; }
+            set { center = value; }
         }
 
         public float X
