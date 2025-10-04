@@ -15,13 +15,14 @@ namespace GameJam_KoganDev.Scripts
     {
         Rectangle playerRect = new Rectangle();
         Vector2 position = new Vector2();
-        float moveSpeedX = 1.15f;
+        float moveSpeedX = .75f;
         float jumpForce = -18f;
         float gravity = 1.15f;
         Vector2 velocity = new Vector2();
         float friction = .35f;
         int terminalVel = 20;
-        float maxMoveSpeed = 4f;
+        float maxMoveSpeed = 3.5f;
+        float iMaxMS = 3.5f;
 
         Texture2D playerTexture;
 
@@ -58,6 +59,10 @@ namespace GameJam_KoganDev.Scripts
         public bool addLevel = false;
         public bool changeLevel = false;
 
+        Game1 game;
+        int jumpCount = 0;
+       // int enemyCreated = 1;
+
         public Rectangle PlayerRect
         {
             get { return playerRect; }
@@ -78,7 +83,7 @@ namespace GameJam_KoganDev.Scripts
             set { velocity = value; }
         }
 
-        public Player(Rectangle playerRect, ContentManager content, Dictionary<string, Keys> keys, Rectangle currBounds)
+        public Player(Rectangle playerRect, ContentManager content, Dictionary<string, Keys> keys, Rectangle currBounds, Game1 game)
         {
             this.playerRect = playerRect;
             Position = new Vector2(playerRect.X, playerRect.Y);
@@ -90,6 +95,7 @@ namespace GameJam_KoganDev.Scripts
             goalPosY = 0;
             minPosY = currBounds.Height;
             heightBounds = currBounds.Height;
+            this.game = game;
             //maxShortJumpDelay = shortJumpDelay;
         }
 
@@ -114,7 +120,12 @@ namespace GameJam_KoganDev.Scripts
             if (currKB.IsKeyDown(Keybinds["Jump"]) && prevKB.IsKeyUp(Keybinds["Jump"]) && playerState != PlayerStates.Jumping && velocity.Y < 8)
             {
                 playerState = PlayerStates.Jumping;
-
+                if(jumpCount == 0)
+                {
+                    jumpCount++;
+                    game.CreateEnemies();
+                }
+               
                 if (isFalling)
                 {
                     //hasDoubleJumped = f;
@@ -170,7 +181,7 @@ namespace GameJam_KoganDev.Scripts
                 {
                     playerState = PlayerStates.Movement;
                     dashDistance = distance;
-                    maxMoveSpeed = 4f;
+                    maxMoveSpeed = iMaxMS;
                 }
             }
 
@@ -209,7 +220,7 @@ namespace GameJam_KoganDev.Scripts
                         {
                             Point playerMP = new Point(playerRect.Center.X / 64, (playerRect.Center.Y + (heightBounds * levelIn)) / 64 );
 
-                            if (mapBuilder.currMap[playerMP.Y + 1, playerMP.X] != 2)
+                            if (playerMP.Y + 1 < mapBuilder.currMap.GetLength(0) && mapBuilder.currMap[playerMP.Y + 1, playerMP.X] != 2)
                             {
                                 mapBuilder.yMapDims[levelIn][playerMP.Y + 1, playerMP.X] = 2;
                                 mapBuilder.RefreshPlatforms(levelIn, new Point(playerMP.X, playerMP.Y + 1), true);
@@ -242,6 +253,11 @@ namespace GameJam_KoganDev.Scripts
                                 velocity.X -= dashForce;
                             }
                             numDashes--;
+
+                            if(isFalling == false)
+                            {
+                                Position = new Vector2(position.X, position.Y - 2);
+                            }
                         }
                         break;
                 }
@@ -267,7 +283,7 @@ namespace GameJam_KoganDev.Scripts
                     if (playerState != PlayerStates.Dashing)
                         playerState = PlayerStates.Movement;
                     hasDoubleJumped = false;
-                    maxMoveSpeed = 4f;
+                    maxMoveSpeed = iMaxMS;
                 }
             }
             bool refresh = false;
@@ -282,7 +298,7 @@ namespace GameJam_KoganDev.Scripts
                     if (playerState != PlayerStates.Dashing)
                         playerState = PlayerStates.Movement;
                     hasDoubleJumped = false;
-                    maxMoveSpeed = 4f;
+                    maxMoveSpeed = iMaxMS;
                 }
 
                 if(playerRect.TouchBottomOf(platformTile.Rectangle))
@@ -320,7 +336,7 @@ namespace GameJam_KoganDev.Scripts
                     {
                         playerState = PlayerStates.Movement;
                         dashDistance = distance;
-                        maxMoveSpeed = 4f;
+                        maxMoveSpeed = iMaxMS;
                     }
 
                     PlayerRect = new Rectangle(platformTile.Rectangle.Left - (playerRect.Width + 1), (int)position.Y, playerRect.Width, playerRect.Height);
@@ -334,7 +350,7 @@ namespace GameJam_KoganDev.Scripts
                     {
                         playerState = PlayerStates.Movement;
                         dashDistance = distance;
-                        maxMoveSpeed = 4f;
+                        maxMoveSpeed = iMaxMS;
                     }
 
                     PlayerRect = new Rectangle(platformTile.Rectangle.Right + 1, (int)position.Y, playerRect.Width, playerRect.Height);
@@ -348,19 +364,37 @@ namespace GameJam_KoganDev.Scripts
             }
 
 
-            if (playerRect.Y < goalPosY)
+            if (playerRect.Y + playerRect.Height/4 < goalPosY)
             {
                 levelIn++;
+
+                if(levelIn > mapBuilder.yMapDims.Count - 1 && game.createdEnemies != mapBuilder.yMapDims.Count - 1)
+                {
+                    jumpCount = 0;
+
+                }
+                else if(levelIn == mapBuilder.yMapDims.Count - 1 && game.createdEnemies == mapBuilder.yMapDims.Count - 1)
+                {
+                    jumpCount = 0;
+                }
+
 
                 goalPosY = -(heightBounds * (levelIn));
                 addLevel = true;
                 minPosY -= heightBounds;
                 //velocity.Y += jumpForce;
                 PlayerRect = new Rectangle(playerRect.X, playerRect.Y - (playerRect.Height + 2), playerRect.Width, playerRect.Height);
+                game.enemyStartPos = position;
             }
             if(playerRect.Y > minPosY)
             {
                 levelIn--;
+
+                if(levelIn < mapBuilder.yMapDims.Count)
+                {
+                    jumpCount = 1;
+                }
+
                 changeLevel = true;
                 minPosY += heightBounds;
                 goalPosY = -(heightBounds * levelIn);

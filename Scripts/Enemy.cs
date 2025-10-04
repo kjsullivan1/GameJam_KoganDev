@@ -102,7 +102,7 @@ namespace GameJam_KoganDev.Scripts
             switch (levelNum)
             {
                 case 0:
-                    moveSpeed = 2.25f;
+                    moveSpeed = 1.25f;
                     iMoveSpeed = moveSpeed;
                     break;
                 case 1:
@@ -114,7 +114,7 @@ namespace GameJam_KoganDev.Scripts
                     iMoveSpeed = moveSpeed;
                     break;
                 case 3:
-                    moveSpeed = 2.25f;
+                    moveSpeed = 2.5f;
                     iMoveSpeed = moveSpeed;
                     break;
                 case 4:
@@ -140,7 +140,7 @@ namespace GameJam_KoganDev.Scripts
                     targetOffset.Y -= 16;
                     break;
                 case 3://Down
-                    targetOffset.Y += 16;
+                    targetOffset.Y += 32;
                     break;
             }
         }
@@ -149,7 +149,7 @@ namespace GameJam_KoganDev.Scripts
             this.map = map;
             this.tPlayer = player;
             enemyRect = new Rectangle((int)position.X, (int)position.Y, tileSize, tileSize);
-            target = new Vector2(player.PlayerRect.Center.X + targetOffset.X, player.PlayerRect.Center.Y + targetOffset.Y);
+            target = new Vector2(player.PlayerRect.Center.X + targetOffset.X, player.PlayerRect.Y + targetOffset.Y);
 
             //Vector2 targetDir = new Vector2(player.PlayerRect.Center.X, player.PlayerRect.Center.Y) - new Vector2(enemyRect.Center.X, enemyRect.Center.Y);
             //angle = (float)Math.Atan2(targetDir.Y, targetDir.X);

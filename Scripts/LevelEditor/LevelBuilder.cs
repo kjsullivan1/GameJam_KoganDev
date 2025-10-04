@@ -33,8 +33,8 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
 
         public List<Vector2> itemSpawns = new List<Vector2>();
         public List<Vector2> itemSpawnCollection = new List<Vector2>();
-        public int maxItems = 3;
-        public int numItems = 3;
+        public int maxItems;
+        //public int numItems = 3;
 
         //public Dictionary<string, List<Rectangle>> items = new Dictionary<string, List<Rectangle>>();
         public List<Rectangle> dashItems = new List<Rectangle>();
@@ -52,8 +52,10 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
             gameMap = new int[gameRows, gameCols];
         }
 
-        public void DetermineItemSpawns(int yOffset)
+        public void DetermineItemSpawns(int yOffset, int gameLevel) //Game Level
         {
+            maxItems = gameLevel;
+          
             List<Vector2> temp = new List<Vector2>(itemSpawns);
             for (int y = 1; y < gameMap.GetLength(0); y++)
             {
@@ -72,61 +74,121 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
                 itemSpawnCollection.Add(itemSpawns[itemSpawns.Count - 1]);
             }
 
-            if(maxItems > 3)
+            List<int> spawnOrder = new List<int>();
+            while (maxItems > 0)
             {
-
-            }
-            else
-            {
-                List<int> spawnOrder = new List<int>();
-
-                while(true)
+                int num = random.Next(0, maxItems);
+                if (spawnOrder.Contains(num) == false)
                 {
-                    int num = random.Next(0, numItems);
-                    if(spawnOrder.Contains(num) == false)
-                    {
-                        spawnOrder.Add(num);
-                    }
+                    spawnOrder.Add(num);
+                }
 
-                    if (spawnOrder.Count == numItems)
+                if (spawnOrder.Count == maxItems)
+                    break;
+            }
+
+            for (int i = 0; i < spawnOrder.Count; i++)
+            {
+                switch (spawnOrder[i])
+                {
+                    case 0: //create 
+                        createItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+                        break;
+                    case 1: // dash
+                        dashItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+                        break;
+                    case 2://power jump
+                        powerJumpItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
                         break;
                 }
+            }
 
-                for (int i = 0; i < spawnOrder.Count; i++)
-                {
-                    switch (spawnOrder[i])
-                    {
-                        case 0: //create 
-                            createItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
-                            break;
-                        case 1: // dash
-                            dashItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
-                            break;
-                        case 2://power jump
-                            powerJumpItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
-                            break;
-                    }
-                }
+            //switch (maxItems)
+            //{
+            //    case 0:
+            //        break;
+            //    case 1: //Create items only 
+            //        for(int i = 0; i < numItems; i++)
+            //        {
+            //            createItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+            //        }
+            //        break;
+            //    case 2: // Create AND powerJump
+            //        List<int> spawnOrder = new List<int>();
+
+            //        while (true)
+            //        {
+            //            int num = random.Next(0, numItems);
+            //            if (spawnOrder.Contains(num) == false)
+            //            {
+            //                spawnOrder.Add(num);
+            //            }
+
+            //            if (spawnOrder.Count == numItems)
+            //                break;
+            //        }
+
+
+            //        break;
+            //    case 3: //Create, powerJump, and Dash 
+            //        break;
+            //}
+
+            //if(maxItems > 3)
+            //{
+
+            //}
+            //else
+            //{
+            //    List<int> spawnOrder = new List<int>();
+
+            //    while(true)
+            //    {
+            //        int num = random.Next(0, numItems);
+            //        if(spawnOrder.Contains(num) == false)
+            //        {
+            //            spawnOrder.Add(num);
+            //        }
+
+            //        if (spawnOrder.Count == numItems)
+            //            break;
+            //    }
+
+            //    for (int i = 0; i < spawnOrder.Count; i++)
+            //    {
+            //        switch (spawnOrder[i])
+            //        {
+            //            case 0: //create 
+            //                createItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+            //                break;
+            //            case 1: // dash
+            //                dashItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+            //                break;
+            //            case 2://power jump
+            //                powerJumpItems.Add(new Rectangle((int)itemSpawns[i].X * 64, (((int)itemSpawns[i].Y * 64) - 64) - yOffset, 64, 64));
+            //                break;
+            //        }
+            //    }
 
                
 
-            }
+            //}
 
         }
 
 
-        public void StartLevel(int level, int yOffset)
+        public void StartLevel(int level, int yOffset, int gameLevel)
         {
-            switch(level)
+            switch(gameLevel)
             {
-                case 0:
+                default:
                     CreateStart();
-                    DetermineItemSpawns(yOffset);
+                    DetermineItemSpawns(yOffset, gameLevel);
                     break;
             }
         }
 
-        public void CreateNewSection(int yOffset)
+        public void CreateNewSection(int yOffset, int gameLevel)
         {
             gameMap = new int[gameRows, gameCols];
 
@@ -241,11 +303,12 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
 
 
             }
-            DetermineItemSpawns(yOffset);
+            DetermineItemSpawns(yOffset, gameLevel);
         }
 
         void CreateStart()
         {
+            gameMap = new int[gameRows, gameCols];
             List<Rectangle> currRow = new List<Rectangle>(); //represents the platform tiles on the row that is "currently" being made
             int platformChance = 80;
             int numPlatforms = 0;

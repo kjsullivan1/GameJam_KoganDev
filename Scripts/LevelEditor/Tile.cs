@@ -122,6 +122,7 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
         {
             texture = Content.Load<Texture2D>("MapTiles/Tile" + i);
             this.Rectangle = rect;
+            this.tileColor = Color.Black;
         }
     }
 
