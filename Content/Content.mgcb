@@ -39,12 +39,43 @@
 /processorParam:TextureFormat=Compressed
 /build:Fonts/EndLevel.spritefont
 
+#begin Fonts/Text.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Fonts/Text.spritefont
+
 #begin Fonts/TitleFont.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
 /processorParam:PremultiplyAlpha=True
 /processorParam:TextureFormat=Compressed
 /build:Fonts/TitleFont.spritefont
+
+#begin MapTiles/Background_Color.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:MapTiles/Background_Color.png
+
+#begin MapTiles/Background_NoColor.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:MapTiles/Background_NoColor.png
 
 #begin MapTiles/Black.png
 /importer:TextureImporter
@@ -141,6 +172,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:MapTiles/Tile2.png
+
+#begin Player/AnimatedFire.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Player/AnimatedFire.png
 
 #begin Player/PlayerSittingAngry.png
 /importer:TextureImporter

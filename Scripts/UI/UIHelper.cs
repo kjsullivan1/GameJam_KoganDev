@@ -15,6 +15,7 @@ namespace GameJam_KoganDev.Scripts.UI
         public static SpriteFont textFont;
         public static SpriteFont buttonFont;
         public static SpriteFont endLevelFont;
+        public static SpriteFont cutSceneFont;
         public static Texture2D textBackground;
         public static Texture2D playBtnBG;
 
@@ -39,15 +40,21 @@ namespace GameJam_KoganDev.Scripts.UI
             //        button.Disabled = false;
             //        button.TextOffset = new Vector2(50, 30);
             //        break;
-                
+
             //}
-            if(id.Contains("MainMenu"))
+            if (id.Contains("MainMenu"))
             {
-                if(id.Contains("How"))
+                if (id.Contains("How"))
                 {
                     button = new UIButton(id, new Vector2(x, y), new Vector2(400, 125), buttonFont, text, Color.White, playBtnBG);
                     button.Disabled = false;
                     button.TextOffset = new Vector2(50, 30);
+                }
+                else if(id.Contains("Credits"))
+                {
+                    button = new UIButton(id, new Vector2(x, y), new Vector2(400, 125), buttonFont, text, Color.White, playBtnBG);
+                    button.Disabled = false;
+                    button.TextOffset = new Vector2(85, 30);
                 }
                 else
                 {
@@ -55,17 +62,29 @@ namespace GameJam_KoganDev.Scripts.UI
                     button.Disabled = false;
                     button.TextOffset = new Vector2(100, 30);
                 }
-               
+
+            }
+            else if(id.Contains("MainCreditsBtn"))
+            {
+                button = new UIButton(id, new Vector2(x, y), new Vector2(400, 125), buttonFont, text, Color.White, playBtnBG);
+                button.Disabled = false;
+                button.TextOffset = new Vector2(85, 30);
+            }
+            else if(id.Contains("MenuCreditsBtn"))
+            {
+                button = new UIButton(id, new Vector2(x, y), new Vector2(400, 125), buttonFont, text, Color.White, playBtnBG);
+                button.Disabled = false;
+                button.TextOffset = new Vector2(100, 30);
             }
 
-            return button;
+                return button;
         }
 
         public static UITextBlock CreateTextblock(string id, string text, int x, int y)
         {
             UITextBlock textBlock = null;
 
-            if(id.Contains("MainMenu"))
+            if (id.Contains("MainMenu") || id.Contains("PreLevel"))
             {
                 
                 textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(65, 30), textFont, text, Color.White, textBackground);
@@ -75,6 +94,34 @@ namespace GameJam_KoganDev.Scripts.UI
                 textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(65, 30), endLevelFont, text, Color.White, textBackground);
             }
 
+            if(id.Contains("MenuCredits"))
+            {
+                textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(65, 30), endLevelFont, text, Color.White, textBackground);
+            }
+
+            if(id.Contains("EndGameCredits"))
+            {
+                textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(65, 30), endLevelFont, text, Color.White, textBackground);
+            }
+
+            if(id.Contains("SkillSelection"))
+            {
+                textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(5, 5), cutSceneFont, text, Color.Black, textBackground);
+            }
+
+            #region Character1 Dialogue
+            if (id.Contains("C1D"))
+            {
+                textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(30, 18), cutSceneFont, text, Color.White, textBackground);
+
+            }
+            #endregion
+            #region Character2 Dialogue
+            if (id.Contains("C2D"))
+            {
+                textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(30, 18), cutSceneFont, text, Color.Crimson, textBackground);
+            }
+            #endregion
             return textBlock;
         }
 

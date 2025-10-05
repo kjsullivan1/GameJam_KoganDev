@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SharpDX.Direct3D11;
 
 namespace GameJam_KoganDev.Scripts.LevelEditor
 {
@@ -16,6 +17,8 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
         public List<GroundTile> GroundTiles { get { return groundTiles; } }
         private List<PlatformTile> platformTiles = new List<PlatformTile>();
         public List<PlatformTile> PlatformTiles { get { return platformTiles; } }
+        private List <BackgroundTile> backgroundTiles = new List<BackgroundTile>();
+        public List<BackgroundTile> BackgroundTiles { get { return backgroundTiles; } }
 
         private int width;
         private int height;
@@ -143,8 +146,16 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
 
                         if (num == 2)
                         {
+                            backgroundTiles.Add(new BackgroundTile(num, new Rectangle((x * size), (y * size) - (i * screenHeight), size, size)));
+                            backgroundTiles[backgroundTiles.Count - 1].mapPoint = new[] { y, x };
                             platformTiles.Add(new PlatformTile(num, new Rectangle((x * size), (y * size) - (i * screenHeight), size, size)));
                             platformTiles[platformTiles.Count - 1].mapPoint = new[] { y, x };
+                        }
+
+                        if(num == 0)
+                        {
+                            backgroundTiles.Add(new BackgroundTile(num, new Rectangle((x * size), (y * size) - (i * screenHeight), size, size)));
+                            backgroundTiles[backgroundTiles.Count - 1].mapPoint = new[] { y, x };
                         }
                     }
                 }
@@ -153,7 +164,11 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            foreach(GroundTile tile in groundTiles)
+            foreach (BackgroundTile tile in backgroundTiles)
+            {
+                tile.Draw(spriteBatch);
+            }
+            foreach (GroundTile tile in groundTiles)
             {
                 tile.Draw(spriteBatch);
             }

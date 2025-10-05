@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GameJam_KoganDev.Scripts.LevelEditor;
+using GameJam_KoganDev.Scripts.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SharpDX.XAudio2;
 
 namespace GameJam_KoganDev.Scripts
 {
@@ -62,6 +64,7 @@ namespace GameJam_KoganDev.Scripts
         Game1 game;
         int jumpCount = 0;
        // int enemyCreated = 1;
+       public Color playerColor = Color.White;
 
         public Rectangle PlayerRect
         {
@@ -120,12 +123,12 @@ namespace GameJam_KoganDev.Scripts
             if (currKB.IsKeyDown(Keybinds["Jump"]) && prevKB.IsKeyUp(Keybinds["Jump"]) && playerState != PlayerStates.Jumping && velocity.Y < 8)
             {
                 playerState = PlayerStates.Jumping;
-                if(jumpCount == 0)
+                if (jumpCount == 0)
                 {
                     jumpCount++;
                     game.CreateEnemies();
                 }
-               
+
                 if (isFalling)
                 {
                     //hasDoubleJumped = f;
@@ -145,30 +148,37 @@ namespace GameJam_KoganDev.Scripts
                 }
             }
 
+            
+
             if (currKB.IsKeyDown(Keybinds["BreakSkill"]) && prevKB.IsKeyUp(Keybinds["BreakSkill"]))
             {
                 playerSkill = PlayerSkills.Break;
+                UpdateSkillText();
             }
             else if (currKB.IsKeyDown(Keybinds["CreateSkill"]) && prevKB.IsKeyUp(Keybinds["CreateSkill"]))
             {
                 playerSkill = PlayerSkills.Create;
+                UpdateSkillText();
             }
             else if (currKB.IsKeyDown(Keybinds["DashSkill"]) && prevKB.IsKeyUp(Keybinds["DashSkill"]))
             {
                 playerSkill = PlayerSkills.Dash;
+                UpdateSkillText();
+
             }
             else if (currKB.IsKeyDown(Keybinds["PowerJumpSkill"]) && prevKB.IsKeyUp(Keybinds["PowerJumpSkill"]))
             {
                 playerSkill = PlayerSkills.PowerJump;
+                UpdateSkillText();
             }
 
             Position += Velocity;
-            if (isFalling && playerState != PlayerStates.Dashing )
+            if (isFalling && playerState != PlayerStates.Dashing)
                 velocity.Y += gravity;
 
-            if(playerState == PlayerStates.Dashing )
+            if (playerState == PlayerStates.Dashing)
             {
-                if(velocity.X > 0)
+                if (velocity.X > 0)
                 {
                     dashDistance -= velocity.X;
                 }
@@ -177,7 +187,7 @@ namespace GameJam_KoganDev.Scripts
                     dashDistance += velocity.X;
                 }
 
-                if(dashDistance <= 0)
+                if (dashDistance <= 0)
                 {
                     playerState = PlayerStates.Movement;
                     dashDistance = distance;
@@ -185,26 +195,26 @@ namespace GameJam_KoganDev.Scripts
                 }
             }
 
-            if(velocity.X > 0)
+            if (velocity.X > 0)
             {
                 velocity.X -= friction;
-                if(velocity.X<0)
-                     velocity.X = 0;
+                if (velocity.X < 0)
+                    velocity.X = 0;
 
-                if(velocity.X > maxMoveSpeed)
+                if (velocity.X > maxMoveSpeed)
                     velocity.X = maxMoveSpeed;
             }
-            else if(velocity.X < 0)
+            else if (velocity.X < 0)
             {
                 velocity.X += friction;
                 if (velocity.X > 0)
                     velocity.X = 0;
 
-                if(velocity.X < -maxMoveSpeed)
+                if (velocity.X < -maxMoveSpeed)
                     velocity.X = -maxMoveSpeed;
             }
 
-            if(isFalling && velocity.Y > terminalVel)
+            if (isFalling && velocity.Y > terminalVel)
             {
                 velocity.Y = terminalVel;
             }
@@ -213,12 +223,12 @@ namespace GameJam_KoganDev.Scripts
 
             if (currKB.IsKeyDown(Keybinds["Skill"]))
             {
-                switch(playerSkill)
+                switch (playerSkill)
                 {
                     case PlayerSkills.Create:
-                        if(isFalling && prevKB.IsKeyUp(Keybinds["Skill"]) && numCreate > 0)
+                        if (isFalling && prevKB.IsKeyUp(Keybinds["Skill"]) && numCreate > 0)
                         {
-                            Point playerMP = new Point(playerRect.Center.X / 64, (playerRect.Center.Y + (heightBounds * levelIn)) / 64 );
+                            Point playerMP = new Point(playerRect.Center.X / 64, (playerRect.Center.Y + (heightBounds * levelIn)) / 64);
 
                             if (playerMP.Y + 1 < mapBuilder.currMap.GetLength(0) && mapBuilder.currMap[playerMP.Y + 1, playerMP.X] != 2)
                             {
@@ -244,7 +254,7 @@ namespace GameJam_KoganDev.Scripts
                             maxMoveSpeed += dashForce;
                             velocity.Y = 0;
                             playerState = PlayerStates.Dashing;
-                            if(velocity.X > 0)
+                            if (velocity.X > 0)
                             {
                                 velocity.X += dashForce;
                             }
@@ -254,21 +264,41 @@ namespace GameJam_KoganDev.Scripts
                             }
                             numDashes--;
 
-                            if(isFalling == false)
+                            if (isFalling == false)
                             {
                                 Position = new Vector2(position.X, position.Y - 2);
                             }
                         }
                         break;
                 }
+                UpdateSkillText();
             }
 
             prevKB = currKB;
         }
 
+        public void UpdateSkillText()
+        {
+            switch (playerSkill)
+            {
+                case PlayerSkills.Break:
+                    game.SetSkill("Skill:\nBreak: infinite use");
+                    break;
+                case PlayerSkills.Dash:
+                    game.SetSkill("Skill:\nDash: " + numDashes);
+                    break;
+                case PlayerSkills.Create:
+                    game.SetSkill("Skill:\nCreate: " + numCreate);
+                    break;
+                case PlayerSkills.PowerJump:
+                    game.SetSkill("Skill:\nPower Jump: " + numPowerJump);
+                    break;
+            }
+        }
+
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(playerTexture, PlayerRect, Color.White);
+            spriteBatch.Draw(playerTexture, PlayerRect, playerColor);
         }
 
         private void Collisions(KeyboardState kb)
@@ -341,7 +371,7 @@ namespace GameJam_KoganDev.Scripts
 
                     PlayerRect = new Rectangle(platformTile.Rectangle.Left - (playerRect.Width + 1), (int)position.Y, playerRect.Width, playerRect.Height);
                     if (velocity.X > 0)
-                        velocity.X = 0;
+                        position.X -= velocity.X;
                 }
 
                 if(playerRect.TouchRightOf(platformTile.Rectangle))
@@ -355,7 +385,7 @@ namespace GameJam_KoganDev.Scripts
 
                     PlayerRect = new Rectangle(platformTile.Rectangle.Right + 1, (int)position.Y, playerRect.Width, playerRect.Height);
                     if (velocity.X < 0)
-                        velocity.X = 0;
+                        position.X += velocity.X;
                 }
             }
             if(refresh)
@@ -386,7 +416,7 @@ namespace GameJam_KoganDev.Scripts
                 PlayerRect = new Rectangle(playerRect.X, playerRect.Y - (playerRect.Height + 2), playerRect.Width, playerRect.Height);
                 game.enemyStartPos = position;
             }
-            if(playerRect.Y > minPosY)
+            if(playerRect.Y > minPosY && playerRect.Bottom < heightBounds)
             {
                 levelIn--;
 
@@ -404,6 +434,17 @@ namespace GameJam_KoganDev.Scripts
                     //Die
                 }
             }
+
+            if(playerRect.Bottom > heightBounds)
+            {
+                PlayerRect = new Rectangle(0, heightBounds - 120, playerRect.Width, playerRect.Height);
+            }
+                
+        }
+
+        public void SaveGame()
+        {
+
         }
     }
 }

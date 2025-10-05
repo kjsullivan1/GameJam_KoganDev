@@ -75,16 +75,13 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
             }
 
             List<int> spawnOrder = new List<int>();
-            while (maxItems > 0)
+            while (spawnOrder.Count < maxItems)
             {
                 int num = random.Next(0, maxItems);
                 if (spawnOrder.Contains(num) == false)
                 {
                     spawnOrder.Add(num);
                 }
-
-                if (spawnOrder.Count == maxItems)
-                    break;
             }
 
             for (int i = 0; i < spawnOrder.Count; i++)
@@ -183,6 +180,9 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
             {
                 default:
                     CreateStart();
+                    createItems.Clear();
+                    dashItems.Clear();
+                    powerJumpItems.Clear();
                     DetermineItemSpawns(yOffset, gameLevel);
                     break;
             }

@@ -5,6 +5,7 @@ using GameJam_KoganDev.Scripts.LevelEditor;
 using System.Collections.Generic;
 using GameJam_KoganDev.Scripts;
 using GameJam_KoganDev.Scripts.UI;
+using Accessibility;
 
 namespace GameJam_KoganDev
 {
@@ -16,6 +17,9 @@ namespace GameJam_KoganDev
         List<int[,]> gameLevels = new List<int[,]>();
         MapBuilder mapBuilder = new MapBuilder();
         UIManager UIManager;
+        Vector2 initalCamPos;
+
+       
 
         Player player;
 
@@ -34,7 +38,7 @@ namespace GameJam_KoganDev
         public int gameLevel = 0;
         public Vector2 enemyStartPos;
 
-        public enum GameStates { TitleScreen, inGame, EndLevel, CutScene, Credits}
+        public enum GameStates { TitleScreen, inGame, EndLevel, CutScene, Credits, PreLevel}
         public GameStates gameState = GameStates.TitleScreen;
 
         public MouseState ms;
@@ -44,10 +48,20 @@ namespace GameJam_KoganDev
         KeyboardState prevKB;
 
         List<int> sectionsPerLevel = new List<int>();
-        
 
+        Cutscene cutSceneManager;
         //public bool keyBindActive = false;
 
+        bool fade = false;
+        float fadeRate = 1;
+
+        int cutSceneDialogue = 1;
+        Color playerColor = Color.White;
+
+        float preLevelTime = 3600f;
+        float tPreLevelTime = 3600f;
+
+        public bool startGame = false;
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -60,6 +74,7 @@ namespace GameJam_KoganDev
             // TODO: Add your initialization logic here
             graphics.PreferredBackBufferWidth = 1920;
             graphics.PreferredBackBufferHeight = 1080;
+
 
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
@@ -81,10 +96,10 @@ namespace GameJam_KoganDev
             Keybinds.Add("PowerJumpSkill", Keys.Right);
 
             sectionsPerLevel.Add(0);//Level 1
-            sectionsPerLevel.Add(1);//Level 2
-            sectionsPerLevel.Add(2); //Level 3
-            sectionsPerLevel.Add(3);//Level 4
-            sectionsPerLevel.Add(4);//Level 5
+            sectionsPerLevel.Add(0);//Level 2
+            sectionsPerLevel.Add(0); //Level 3
+            sectionsPerLevel.Add(0);//Level 4
+            sectionsPerLevel.Add(0);//Level 5
            
             UIManager = new UIManager();
 
@@ -93,16 +108,40 @@ namespace GameJam_KoganDev
             base.Initialize();
         }
 
+        public void SetSkill(string text)
+        {
+            UIHelper.SetElementText(UIManager.uiElements["SkillSelection"], text);
+        }
+
         public void CreateEnemies()
         {
-            
-                createdEnemies++;
-                for (int i = 0; i < gameLevel + 1; i++)
-                {
-                    enemies.Add(new Enemy(Content, enemyStartPos, mapBuilder, mapBuilder.currMap, GraphicsDevice, gameLevel));
-                }
-            
-           
+            createdEnemies++;
+
+            int numEnemies = 1;
+
+            switch(gameLevel)
+            {
+                case 0:
+                    numEnemies = 1;
+                    break;
+                case 1:
+                    numEnemies = 1;
+                    break;
+                case 2:
+                    numEnemies = 2;
+                    break;
+                case 3:
+                    numEnemies = 3;
+                    break;
+                case 4:
+                    numEnemies = 4;
+                    break;
+            }
+
+            for (int i = 0; i < numEnemies; i++)
+            {
+                enemies.Add(new Enemy(Content, enemyStartPos, mapBuilder, mapBuilder.currMap, GraphicsDevice, gameLevel));
+            }
         }
 
         protected override void LoadContent()
@@ -113,7 +152,11 @@ namespace GameJam_KoganDev
             UIHelper.endLevelFont = Content.LoadLocalized<SpriteFont>("Fonts/EndLevel");
             UIHelper.textBackground = Content.Load<Texture2D>("MapTiles/Black");
             UIHelper.playBtnBG = Content.Load<Texture2D>("Player/PlayerTexture");
+            UIHelper.cutSceneFont = Content.Load<SpriteFont>("Fonts/Text");
             UIManager.CreateUIElements(new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight), this);
+
+            UIHelper.SetElementVisibility("MainMenu", true, UIManager.uiElements);
+            UIHelper.SetElementVisibility("MainCreditsBtn", true, UIManager.uiElements);
             //enemy = new Enemy(Content, player.Position, mapBuilder, mapBuilder.yMapDims[0], GraphicsDevice, 0);
             // TODO: use this.Content to load your game content here
         }
@@ -121,6 +164,7 @@ namespace GameJam_KoganDev
         public void StartGame()
         {
             gameState = GameStates.inGame;
+            UIHelper.SetElementVisibility("SkillSelection", true, UIManager.uiElements);
 
             currBounds = new Rectangle(0, 0, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             player = new Player(new Rectangle(0, 768, 50, 50), Content, Keybinds, currBounds, this);
@@ -137,7 +181,9 @@ namespace GameJam_KoganDev
 
         public void StartNewLevel()
         {
+            gameLevel++;
             gameState = GameStates.inGame;
+            UIHelper.SetElementVisibility("SkillSelection", true, UIManager.uiElements);
 
             enemies.Clear();
             createdEnemies = 0;
@@ -145,9 +191,16 @@ namespace GameJam_KoganDev
             currBounds = new Rectangle(0, 0, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
             
             mapBuilder.yMapDims.Clear();
+            int tNumCreate = player.numCreate;
+            int tNumDash = player.numDashes;
+            int tNumJump = player.numPowerJump;
             player = new Player(new Rectangle(0, 768, 50, 50), Content, Keybinds, currBounds, this);
             player.mapBuilder = mapBuilder;
+            player.playerColor = playerColor;
             enemyStartPos = player.Position;
+            player.numCreate = tNumCreate;
+            player.numDashes = tNumDash;
+            player.numPowerJump = tNumJump;
            
             levelBuilder.StartLevel(player.levelIn, graphics.PreferredBackBufferHeight * player.levelIn, gameLevel);
             gameLevels.Clear();
@@ -158,6 +211,7 @@ namespace GameJam_KoganDev
             mapBuilder.Refresh(gameLevels, pixelSize, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             camera.Position = new Vector2(camera.Position.X, ((camera.viewport.Y + camera.viewport.Height) / 2) - (camera.viewport.Height * player.levelIn));
+
         }
 
         protected override void Update(GameTime gameTime)
@@ -168,9 +222,14 @@ namespace GameJam_KoganDev
             switch(gameState)
             {
                 case GameStates.TitleScreen:
-                    UIHelper.SetElementVisibility("MainMenu", true, UIManager.uiElements);
+                    
                     camera.Update(new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2));
                     UseMouse();
+                    if(startGame)
+                    {
+                        currBounds = new Rectangle(0, 0, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+                        UIManager.CreatePreLevel(gameLevel, "Stage 1: Denial", currBounds);
+                    }
                     break;
                 case GameStates.inGame:
                     currBounds = new Rectangle(0, 0 - (graphics.PreferredBackBufferHeight * player.levelIn), graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
@@ -183,6 +242,7 @@ namespace GameJam_KoganDev
                         {
                             player.numCreate++;
                             levelBuilder.createItems.RemoveAt(i);
+                            player.UpdateSkillText();
                         }
                     }
                     for (int i = levelBuilder.dashItems.Count - 1; i >= 0; i--)
@@ -191,6 +251,7 @@ namespace GameJam_KoganDev
                         {
                             player.numDashes++;
                             levelBuilder.dashItems.RemoveAt(i);
+                            player.UpdateSkillText();
                         }
                     }
                     for (int i = levelBuilder.powerJumpItems.Count - 1; i >= 0; i--)
@@ -199,6 +260,7 @@ namespace GameJam_KoganDev
                         {
                             player.numPowerJump++;
                             levelBuilder.powerJumpItems.RemoveAt(i);
+                            player.UpdateSkillText();
                         }
                     }
 
@@ -241,6 +303,7 @@ namespace GameJam_KoganDev
                             gameState = GameStates.EndLevel;
                             currBounds = new Rectangle(0, 0 - (graphics.PreferredBackBufferHeight * player.levelIn), graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
                             UIManager.CreateEndLevel(gameLevel, currBounds);
+                            UIHelper.SetElementVisibility("SkillSelection", false, UIManager.uiElements);
                         }
                         else if (player.levelIn >= mapBuilder.yMapDims.Count)
                         {
@@ -264,12 +327,214 @@ namespace GameJam_KoganDev
 
                     if(kb.IsKeyDown(Keys.Space) && prevKB.IsKeyUp(Keys.Space))
                     {
-                        gameLevel++;
+                        gameState = GameStates.CutScene;
+                        CreateCutsceneMap();
+                        player.playerColor = playerColor;
+                        cutSceneManager.playerColor = playerColor;
+                        UIHelper.SetElementVisibility("EndLevel", false, UIManager.uiElements);
+                        //cutSceneManager = new Cutscene(currBounds, gameLevel, UIManager, new Rectangle())
                         //gameState = GameStates.inGame;
-                        StartNewLevel();
+                        //StartNewLevel();
+                    }
+                    break;
+                case GameStates.CutScene:
+                    camera.Update(new Vector2(camera.Position.X, graphics.PreferredBackBufferHeight / 2));
+                    if(fade)
+                    {
+
+                    }
+                    else
+                    {
+                        if(kb.IsKeyDown(Keys.Space) && prevKB.IsKeyUp(Keys.Space))
+                        {
+                            switch(gameLevel)
+                            {
+                                case 0:
+                                    switch (cutSceneDialogue)
+                                    {
+                                        case 1:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 2:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 3:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 4:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 5:
+                                            UIHelper.SetElementVisibility("C1D", false, UIManager.uiElements);
+                                            UIHelper.SetElementVisibility("C2D", false, UIManager.uiElements);
+                                            break;
+                                        case 6:
+                                            gameState = GameStates.PreLevel;
+                                            UIManager.CreatePreLevel(gameLevel, "Stage 2: Bargaining", currBounds);
+                                            cutSceneDialogue = 0;
+                                            break;
+                                        default:
+                                            
+                                            break;
+                                    }
+                                    break;
+
+                                case 1:
+                                    switch (cutSceneDialogue)
+                                    {
+                                        case 1:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 2:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 3:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 4:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 5:
+                                            UIHelper.SetElementVisibility("C1D", false, UIManager.uiElements);
+                                            UIHelper.SetElementVisibility("C2D", false, UIManager.uiElements);
+                                            break;
+                                        case 6:
+                                            gameState = GameStates.PreLevel;
+                                            UIManager.CreatePreLevel(gameLevel, "Stage 3: Depression", currBounds);
+                                            cutSceneDialogue = 0;
+                                            break;
+                                    }
+
+                                    break;
+                                case 2:
+                                    switch(cutSceneDialogue)
+                                    {
+                                        case 1:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 2:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 3:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 4:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 5:
+                                            UIHelper.SetElementVisibility("C1D", false, UIManager.uiElements);
+                                            UIHelper.SetElementVisibility("C2D", false, UIManager.uiElements);
+                                            break;
+                                        case 6:
+                                            gameState = GameStates.PreLevel;
+                                            UIManager.CreatePreLevel(gameLevel, "Stage 4: Anger", currBounds);
+                                            cutSceneDialogue = 0;
+                                            break;
+                                    }
+                                    break;
+                                case 3:
+                                    switch(cutSceneDialogue)
+                                    {
+                                        case 1:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 2:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 3:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 4:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 5:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 6:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 7:
+                                            UIHelper.SetElementVisibility("C1D", false, UIManager.uiElements);
+                                            UIHelper.SetElementVisibility("C2D", false, UIManager.uiElements);
+                                            break;
+                                        case 8:
+                                            
+
+                                            gameState = GameStates.PreLevel;
+                                            UIManager.CreatePreLevel(gameLevel, "Stage 5: Acceptance", currBounds);
+                                            cutSceneDialogue = 0;
+                                            break;
+
+                                    }
+                                    break;
+                                case 4:
+                                    switch(cutSceneDialogue)
+                                    {
+                                        case 1:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 2:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 3:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 4:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 5:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 6:
+                                            cutSceneManager.UpdateText(gameTime, false, true);
+                                            break;
+                                        case 7:
+                                            cutSceneManager.UpdateText(gameTime, true, false);
+                                            break;
+                                        case 8:
+                                            //cutSceneManager.UpdateText(gameTime, false, true);
+                                            UIHelper.SetElementVisibility("C1D", false, UIManager.uiElements);
+                                            UIHelper.SetElementVisibility("C2D", false, UIManager.uiElements);
+                                            break;
+                                        case 9:
+                                            // End game with Pan up into title
+                                            UIHelper.SetElementVisibility("BeatLevel", false, UIManager.uiElements);
+                                            gameState = GameStates.Credits;
+                                            initalCamPos = camera.Position;
+                                            UIManager.CreateEndGameCredits(currBounds);
+                                            break;
+                                    }
+                                    break;
+                            }
+                            cutSceneDialogue++;
+                        }
+                    }
+                    break;
+                case GameStates.PreLevel:
+                    preLevelTime -= (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                    camera.Update(new Vector2(camera.Position.X, graphics.PreferredBackBufferHeight / 2));
+                    if (preLevelTime < 0)
+                    { 
+                        preLevelTime = tPreLevelTime;
+                        if(startGame)
+                        {
+                            StartGame();
+                            startGame = false;
+                        }
+                        else
+                        {
+                            StartNewLevel();
+                        }
+                        UIHelper.SetElementVisibility("PreLevel", false, UIManager.uiElements);
+                        
                     }
                     break;
                 case GameStates.Credits:
+                    float moveSpeed = 1.5f;
+
+                    if(camera.Position.Y > initalCamPos.Y - graphics.PreferredBackBufferHeight)
+                            camera.Position = new Vector2(camera.Position.X, camera.Position.Y - moveSpeed);
+                    camera.Update(camera.Position);
                     break;
             }
 
@@ -277,6 +542,37 @@ namespace GameJam_KoganDev
             prevKB = kb;
 
                 base.Update(gameTime);
+        }
+
+        private void CreateCutsceneMap()
+        {
+            currBounds = new Rectangle(0, 0, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+            int[,] cutSceneMap = new int[mapBuilder.yMapDims[0].GetLength(0), mapBuilder.yMapDims[0].GetLength(1)];
+            mapBuilder.yMapDims.Clear();
+            gameLevels.Clear();
+
+           for(int y = cutSceneMap.GetLength(0) - 7; y < cutSceneMap.GetLength(0);  y++)
+            {
+                for(int x = 0; x < cutSceneMap.GetLength(1); x++)
+                {
+                    cutSceneMap[y, x] = 1;
+                }
+            }
+            gameLevels.Add(cutSceneMap);
+            levelIndexes.Add(new Vector2(0, gameLevels.Count - 1));
+            //mapBuilder = new MapBuilder();
+            mapBuilder.PlatformTiles.Clear();
+            mapBuilder.Refresh(gameLevels, pixelSize, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+            fade = true;
+            fadeRate = 1f;
+
+            int playerX = ((cutSceneMap.GetLength(1) - (cutSceneMap.GetLength(1) / 3) - 1) * 64);
+            int playerY = ((cutSceneMap.GetLength(0) - 8) * 64) + 20;
+
+            int responderX = 0 + (((cutSceneMap.GetLength(1) / 3)) * 64);
+            
+            cutSceneManager = new Cutscene(currBounds,Content ,gameLevel, UIManager, new Rectangle(playerX, playerY, player.PlayerRect.Width, player.PlayerRect.Height)
+                , new Rectangle(responderX, playerY, player.PlayerRect.Width, player.PlayerRect.Height));
         }
 
         private void UseMouse()
@@ -345,7 +641,7 @@ namespace GameJam_KoganDev
             switch(gameState)
             {
                 case GameStates.TitleScreen:
-                    GraphicsDevice.Clear(Color.CornflowerBlue);
+                    GraphicsDevice.Clear(Color.Black);
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
                     UIManager.Draw(spriteBatch);
                     spriteBatch.End();
@@ -385,6 +681,7 @@ namespace GameJam_KoganDev
                         enemy.Draw(spriteBatch);
                     }
                     levelBuilder.DrawItems(spriteBatch, Content);
+                    UIManager.Draw(spriteBatch);
                     //foreach(Vector2 itemSpawn in levelBuilder.itemSpawns)
                     //{
                     //    spriteBatch.Draw(Content.Load<Texture2D>("MapTiles/Tile1"), new Rectangle(new Point((int)itemSpawn.X * 64, ((int)itemSpawn.Y * 64) -64), new Point(64, 64)), Color.Blue);
@@ -397,20 +694,26 @@ namespace GameJam_KoganDev
                     {
                         case 0:
                             GraphicsDevice.Clear(Color.SlateGray);
+                            playerColor = Color.SlateGray;
                             break;
                         case 1:
                             GraphicsDevice.Clear(Color.DarkGoldenrod);
+                            playerColor = Color.DarkGoldenrod;
                             break;
                         case 2:
                             GraphicsDevice.Clear(Color.RoyalBlue);
+                            playerColor = Color.RoyalBlue;
                             break;
                         case 3:
                             GraphicsDevice.Clear(Color.Crimson);
+                            playerColor = Color.Crimson;
                             break;
                         case 4:
                             GraphicsDevice.Clear(Color.ForestGreen);
+                            playerColor = Color.ForestGreen;
                             break;
                     }
+               
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
                     mapBuilder.Draw(spriteBatch);
                     player.Draw(spriteBatch);
@@ -418,6 +721,99 @@ namespace GameJam_KoganDev
                     spriteBatch.End();
 
                     break;
+                case GameStates.CutScene:
+                    Color shadeColor = Color.Black * .45f;
+                    float minRate = .45f;
+                    switch (gameLevel + 1)
+                    {
+                        case 0:
+                            GraphicsDevice.Clear(Color.SlateGray);
+                            break;
+                        case 1:
+                            GraphicsDevice.Clear(Color.DarkGoldenrod);
+                            minRate = .60f;
+                            break;
+                        case 2:
+                            GraphicsDevice.Clear(Color.RoyalBlue);
+                            minRate = .60f;
+                            break;
+                        case 3:
+                            GraphicsDevice.Clear(Color.Crimson);
+                            minRate = .60f;
+                            break;
+                        case 4:
+                            GraphicsDevice.Clear(Color.ForestGreen);
+                            minRate = .60f;
+                            break;
+                    }
+                   
+                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
+                    
+                    mapBuilder.Draw(spriteBatch);
+
+                    cutSceneManager.Draw(spriteBatch);
+                    
+
+                    spriteBatch.Draw(Content.Load<Texture2D>("Player/PlayerTexture"), new Rectangle(currBounds.X - (64 * 8), currBounds.Y, currBounds.Width + 64, currBounds.Height),
+                         Color.Black * minRate);
+                    UIManager.Draw(spriteBatch);
+                    if (fadeRate > minRate)
+                    {
+                        fadeRate -= .0025f;
+                        spriteBatch.Draw(Content.Load<Texture2D>("Player/PlayerTexture"), new Rectangle(currBounds.X - (64 * 8), currBounds.Y, currBounds.Width + 64, currBounds.Height),
+                        Color.Black * fadeRate);
+                    }
+                    else
+                    {
+                        fade = false;
+                        if(cutSceneManager.mcText == 0 && cutSceneManager.rsText == 0)
+                        {
+                            switch (gameLevel)
+                            {
+                                case 0:
+                                    cutSceneManager.UpdateText(gameTime, true, false);
+                                    break;
+                                case 1:
+                                    cutSceneManager.UpdateText(gameTime, true, false);
+                                    break;
+                                case 2:
+                                    cutSceneManager.UpdateText(gameTime, true, false);
+                                    break;
+                                case 3:
+                                    cutSceneManager.UpdateText(gameTime, false, true);
+                                    break;
+                                case 4:
+                                    cutSceneManager.UpdateText(gameTime, true, false);
+                                    break;
+                            }
+                        }
+                       
+                       
+                    }
+                        
+                        spriteBatch.End();
+                    break;
+                case GameStates.PreLevel:
+                    GraphicsDevice.Clear(Color.Black);
+                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
+                    UIManager.Draw(spriteBatch);
+                    spriteBatch.End();
+                    break;
+                case GameStates.Credits:
+                    GraphicsDevice.Clear(Color.Black);
+                    spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
+
+                    mapBuilder.Draw(spriteBatch);
+                    cutSceneManager.Draw(spriteBatch);
+                    
+                    spriteBatch.Draw(Content.Load<Texture2D>("Player/PlayerTexture"), new Rectangle(currBounds.X - (64 * 8), currBounds.Y, currBounds.Width + 64, currBounds.Height * 2),
+                        Color.Black * .45f);
+                    UIManager.Draw(spriteBatch);
+                    spriteBatch.End();
+
+                    break;
+
+
             }
            
             base.Draw(gameTime);

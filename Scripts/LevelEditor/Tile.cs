@@ -126,5 +126,15 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
         }
     }
 
+    class BackgroundTile : Tile
+    {
+        public BackgroundTile(int i, Rectangle rect)
+        {
+            texture = Content.Load<Texture2D>("MapTiles/Background_NoColor");
+            this.Rectangle = rect;
+            //this.tileColor = Color.Black;
+        }
+    }
+
     
 }
