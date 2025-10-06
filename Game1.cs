@@ -62,6 +62,8 @@ namespace GameJam_KoganDev
         float tPreLevelTime = 3600f;
 
         public bool startGame = false;
+
+        SoundManager soundManager;
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -115,6 +117,27 @@ namespace GameJam_KoganDev
 
         public void CreateEnemies()
         {
+            if(createdEnemies == 0)
+            {
+                switch(gameLevel)
+                {
+                    case 0:
+                        AddAndPlaySound("denial1Theme", true);
+                        break;
+                    case 1:
+                        AddAndPlaySound("bargaining1Theme", true);
+                        break;
+                    case 2:
+                        AddAndPlaySound("depression1Theme", true);
+                        break;
+                    case 3:
+                        AddAndPlaySound("anger1Theme", true);
+                        break;
+                    case 4:
+                        AddAndPlaySound("acceptance1Theme", true);
+                        break;
+                }
+            }
             createdEnemies++;
 
             int numEnemies = 1;
@@ -157,6 +180,10 @@ namespace GameJam_KoganDev
 
             UIHelper.SetElementVisibility("MainMenu", true, UIManager.uiElements);
             UIHelper.SetElementVisibility("MainCreditsBtn", true, UIManager.uiElements);
+
+            soundManager = new SoundManager(Content, 1, 1, 1);
+            soundManager.AddSound("menuThemeGamejam1", true);
+            soundManager.PlaySound();
             //enemy = new Enemy(Content, player.Position, mapBuilder, mapBuilder.yMapDims[0], GraphicsDevice, 0);
             // TODO: use this.Content to load your game content here
         }
@@ -167,16 +194,41 @@ namespace GameJam_KoganDev
             UIHelper.SetElementVisibility("SkillSelection", true, UIManager.uiElements);
 
             currBounds = new Rectangle(0, 0, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
-            player = new Player(new Rectangle(0, 768, 50, 50), Content, Keybinds, currBounds, this);
+            player = new Player(new Rectangle(0, graphics.PreferredBackBufferHeight - 120, 50, 50), Content, Keybinds, currBounds, this);
             player.mapBuilder = mapBuilder;
-            enemyStartPos = player.Position;
 
+            createdEnemies = 0;
+            enemyStartPos = player.Position;
+            levelBuilder.createItems.Clear();
+            levelBuilder.dashItems.Clear();
+            levelBuilder.powerJumpItems.Clear();
+            gameLevels.Clear();
             levelBuilder.StartLevel(player.levelIn, graphics.PreferredBackBufferHeight * player.levelIn, gameLevel);
             gameLevels.Add(levelBuilder.gameMap);
             levelIndexes.Add(new Vector2(0, gameLevels.Count - 1));
             mapBuilder.Refresh(gameLevels, pixelSize, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
+           
 
             camera.Position = new Vector2(camera.Position.X - (mapBuilder.yMapDims[0].GetLength(1) * 64) / 2, camera.Position.Y);
+
+            switch (gameLevel)
+            {
+                case 0:
+                    AddAndPlaySound("denial0Theme", true);
+                    break;
+                case 1:
+                    AddAndPlaySound("bargaining0Theme", true);
+                    break;
+                case 2:
+                    AddAndPlaySound("depression0Theme", true);
+                    break;
+                case 3:
+                    AddAndPlaySound("anger0Theme", true);
+                    break;
+                case 4:
+                    AddAndPlaySound("acceptance0Theme", true);
+                    break;
+            }
         }
 
         public void StartNewLevel()
@@ -194,7 +246,7 @@ namespace GameJam_KoganDev
             int tNumCreate = player.numCreate;
             int tNumDash = player.numDashes;
             int tNumJump = player.numPowerJump;
-            player = new Player(new Rectangle(0, 768, 50, 50), Content, Keybinds, currBounds, this);
+            player = new Player(new Rectangle(0, graphics.PreferredBackBufferHeight - 120, 50, 50), Content, Keybinds, currBounds, this);
             player.mapBuilder = mapBuilder;
             player.playerColor = playerColor;
             enemyStartPos = player.Position;
@@ -211,7 +263,24 @@ namespace GameJam_KoganDev
             mapBuilder.Refresh(gameLevels, pixelSize, graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 
             camera.Position = new Vector2(camera.Position.X, ((camera.viewport.Y + camera.viewport.Height) / 2) - (camera.viewport.Height * player.levelIn));
-
+            switch (gameLevel)
+            {
+                case 0:
+                    AddAndPlaySound("denial0Theme", true);
+                    break;
+                case 1:
+                    AddAndPlaySound("bargaining0Theme", true);
+                    break;
+                case 2:
+                    AddAndPlaySound("depression0Theme", true);
+                    break;
+                case 3:
+                    AddAndPlaySound("anger0Theme", true);
+                    break;
+                case 4:
+                    AddAndPlaySound("acceptance0Theme", true);
+                    break;
+            }
         }
 
         protected override void Update(GameTime gameTime)
@@ -222,7 +291,7 @@ namespace GameJam_KoganDev
             switch(gameState)
             {
                 case GameStates.TitleScreen:
-                    
+                    soundManager.Update(gameTime);
                     camera.Update(new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight / 2));
                     UseMouse();
                     if(startGame)
@@ -266,6 +335,7 @@ namespace GameJam_KoganDev
 
                     // TODO: Add your update logic here
                     //enemy.Upate(gameTime, player, mapBuilder, currBounds);
+                    int num = 0;
                     for (int i = enemies.Count - 1; i >= 0; i--)
                     {
                         enemies[i].Upate(gameTime, player, mapBuilder, currBounds);
@@ -281,6 +351,25 @@ namespace GameJam_KoganDev
                                 enemies[j].moveSpeed = enemies[j].iMoveSpeed;
                             }
                         }
+                      
+                        if (enemies[i].enemyRect.Contains(player.PlayerRect.Center))
+                        {
+                            if(player.playerState == Player.PlayerStates.Dashing)
+                            {
+                                enemies.RemoveAt(i);
+                            }
+                            else
+                            {
+                                num++;
+                                player.jumpForce = player.iJumpForce / 2;
+                                player.maxMoveSpeed = player.iMaxMS / 2;
+                            }
+                        }
+                    }
+                    if(num == 0 && player.jumpForce != player.iJumpForce)
+                    {
+                        player.jumpForce = player.iJumpForce;
+                        player.maxMoveSpeed = player.iMaxMS;
                     }
                     camera.Update(new Vector2(camera.Position.X, ((camera.viewport.Y + camera.viewport.Height) / 2) - (camera.viewport.Height * player.levelIn)));
 
@@ -332,6 +421,7 @@ namespace GameJam_KoganDev
                         player.playerColor = playerColor;
                         cutSceneManager.playerColor = playerColor;
                         UIHelper.SetElementVisibility("EndLevel", false, UIManager.uiElements);
+                        AddAndPlaySound("dialogueTheme", true);
                         //cutSceneManager = new Cutscene(currBounds, gameLevel, UIManager, new Rectangle())
                         //gameState = GameStates.inGame;
                         //StartNewLevel();
@@ -372,6 +462,7 @@ namespace GameJam_KoganDev
                                             gameState = GameStates.PreLevel;
                                             UIManager.CreatePreLevel(gameLevel, "Stage 2: Bargaining", currBounds);
                                             cutSceneDialogue = 0;
+                                            AddAndPlaySound("levelStartTheme", false);
                                             break;
                                         default:
                                             
@@ -402,6 +493,7 @@ namespace GameJam_KoganDev
                                             gameState = GameStates.PreLevel;
                                             UIManager.CreatePreLevel(gameLevel, "Stage 3: Depression", currBounds);
                                             cutSceneDialogue = 0;
+                                            AddAndPlaySound("levelStartTheme", false);
                                             break;
                                     }
 
@@ -429,6 +521,7 @@ namespace GameJam_KoganDev
                                             gameState = GameStates.PreLevel;
                                             UIManager.CreatePreLevel(gameLevel, "Stage 4: Anger", currBounds);
                                             cutSceneDialogue = 0;
+                                            AddAndPlaySound("levelStartTheme", false);
                                             break;
                                     }
                                     break;
@@ -458,8 +551,7 @@ namespace GameJam_KoganDev
                                             UIHelper.SetElementVisibility("C2D", false, UIManager.uiElements);
                                             break;
                                         case 8:
-                                            
-
+                                            AddAndPlaySound("levelStartTheme", false);
                                             gameState = GameStates.PreLevel;
                                             UIManager.CreatePreLevel(gameLevel, "Stage 5: Acceptance", currBounds);
                                             cutSceneDialogue = 0;
@@ -511,6 +603,7 @@ namespace GameJam_KoganDev
                     }
                     break;
                 case GameStates.PreLevel:
+                    soundManager.Update(gameTime);
                     preLevelTime -= (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                     camera.Update(new Vector2(camera.Position.X, graphics.PreferredBackBufferHeight / 2));
                     if (preLevelTime < 0)
@@ -531,7 +624,7 @@ namespace GameJam_KoganDev
                     break;
                 case GameStates.Credits:
                     float moveSpeed = 1.5f;
-
+                    UseMouse();
                     if(camera.Position.Y > initalCamPos.Y - graphics.PreferredBackBufferHeight)
                             camera.Position = new Vector2(camera.Position.X, camera.Position.Y - moveSpeed);
                     camera.Update(camera.Position);
@@ -542,6 +635,21 @@ namespace GameJam_KoganDev
             prevKB = kb;
 
                 base.Update(gameTime);
+        }
+
+        public void AddAndPlaySound(string fileName, bool isLoop)
+        {
+            soundManager.StopCurrSounds();
+            soundManager.ClearSounds();
+            soundManager.AddSound(fileName, isLoop);
+            soundManager.PlaySound();
+        }
+
+        public void AddAndReplaceSound(string fileName)
+        {
+            soundManager.StopCurrSounds();
+            //soundManager.AddSoundAtTime(fileName);
+            soundManager.PlaySound();
         }
 
         private void CreateCutsceneMap()
@@ -669,7 +777,7 @@ namespace GameJam_KoganDev
 
                     // TODO: Add your drawing code here
 
-                    Window.Title = "Position: " + player.Position + "    Velocity: " + player.Velocity + "   DoubleJ: " + player.hasDoubleJumped;
+                   // Window.Title = "Position: " + player.Position + "    Velocity: " + player.Velocity + "   DoubleJ: " + player.hasDoubleJumped;
 
                     spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
 

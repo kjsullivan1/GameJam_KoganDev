@@ -76,6 +76,18 @@ namespace GameJam_KoganDev.Scripts.UI
                 button.Disabled = false;
                 button.TextOffset = new Vector2(100, 30);
             }
+            else if(id.Contains("HowTo"))
+            {
+                button = new UIButton(id, new Vector2(x, y), new Vector2(400, 125), buttonFont, text, Color.White, playBtnBG);
+                button.Disabled = false;
+                button.TextOffset = new Vector2(100, 30);
+            }
+            else if(id.Contains("EndGameBtn"))
+            {
+                button = new UIButton(id, new Vector2(x, y), new Vector2(400, 125), buttonFont, text, Color.White, playBtnBG);
+                button.Disabled = false;
+                button.TextOffset = new Vector2(60, 30);
+            }
 
                 return button;
         }
@@ -107,6 +119,11 @@ namespace GameJam_KoganDev.Scripts.UI
             if(id.Contains("SkillSelection"))
             {
                 textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(5, 5), cutSceneFont, text, Color.Black, textBackground);
+            }
+
+            if(id.Contains("HowTo"))
+            {
+                textBlock = new UITextBlock(id, new Vector2(x, y), new Vector2(65, -175), endLevelFont, text, Color.White, textBackground);
             }
 
             #region Character1 Dialogue

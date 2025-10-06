@@ -18,13 +18,15 @@ namespace GameJam_KoganDev.Scripts
         Rectangle playerRect = new Rectangle();
         Vector2 position = new Vector2();
         float moveSpeedX = .75f;
-        float jumpForce = -18f;
+        public float jumpForce = -18f;
+        public float iJumpForce = -18f;
         float gravity = 1.15f;
+        float iGravity = 1.15f;
         Vector2 velocity = new Vector2();
         float friction = .35f;
         int terminalVel = 20;
-        float maxMoveSpeed = 3.5f;
-        float iMaxMS = 3.5f;
+        public float maxMoveSpeed = 3.5f;
+        public float iMaxMS = 3.5f;
 
         Texture2D playerTexture;
 
@@ -33,8 +35,8 @@ namespace GameJam_KoganDev.Scripts
         public int levelIn = 0;
         public MapBuilder mapBuilder;
 
-        enum PlayerStates { Movement, Jumping, Dashing }
-        PlayerStates playerState = PlayerStates.Movement;
+        public enum PlayerStates { Movement, Jumping, Dashing }
+        public PlayerStates playerState = PlayerStates.Movement;
         bool isFalling = true;
 
         enum PlayerSkills { Break, Dash, Create, PowerJump }

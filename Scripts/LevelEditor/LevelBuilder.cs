@@ -80,7 +80,15 @@ namespace GameJam_KoganDev.Scripts.LevelEditor
                 int num = random.Next(0, maxItems);
                 if (spawnOrder.Contains(num) == false)
                 {
-                    spawnOrder.Add(num);
+                    if(num > 2)
+                    {
+                        spawnOrder.Add(random.Next(0,3));
+                    }
+                    else
+                    {
+                        spawnOrder.Add(num);
+                    }
+                        
                 }
             }
 

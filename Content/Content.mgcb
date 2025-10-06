@@ -13,6 +13,90 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Audio/acceptance0Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/acceptance0Theme.mp3
+
+#begin Audio/acceptance1Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/acceptance1Theme.mp3
+
+#begin Audio/anger0Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/anger0Theme.mp3
+
+#begin Audio/anger1Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/anger1Theme.mp3
+
+#begin Audio/bargaining0Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/bargaining0Theme.mp3
+
+#begin Audio/bargaining1Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/bargaining1Theme.mp3
+
+#begin Audio/denial0Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/denial0Theme.mp3
+
+#begin Audio/denial1Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/denial1Theme.mp3
+
+#begin Audio/depression0Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/depression0Theme.mp3
+
+#begin Audio/depression1Theme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/depression1Theme.mp3
+
+#begin Audio/dialogueTheme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/dialogueTheme.mp3
+
+#begin Audio/levelStartTheme.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/levelStartTheme.mp3
+
+#begin Audio/menuThemeGamejam.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/menuThemeGamejam.mp3
+
+#begin Audio/menuThemeGamejam1.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Audio/menuThemeGamejam1.mp3
+
 #begin Bug_Studios_Full.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -186,7 +186,7 @@ namespace GameJam_KoganDev.Scripts
                     currItem = (UITextBlock)uI.uiElements["C1D34"];
                     UIHelper.SetElementBGRect(currItem, new Rectangle((int)currItem.Position.X, (int)currItem.Position.Y, 500, 150));
 
-                    uI.AddTextBlock(UIHelper.CreateTextblock("C1D44", "You are still one of the coolest people \nI have ever met.", playeRect.X - 25, playeRect.Y - 175));
+                    uI.AddTextBlock(UIHelper.CreateTextblock("C1D44", "You are still the coolest person \nI have ever met.", playeRect.X - 25, playeRect.Y - 175));
                     currItem = (UITextBlock)uI.uiElements["C1D44"];
                     UIHelper.SetElementBGRect(currItem, new Rectangle((int)currItem.Position.X, (int)currItem.Position.Y, 500, 150));
                     #endregion
@@ -196,7 +196,7 @@ namespace GameJam_KoganDev.Scripts
                     currItem = (UITextBlock)uI.uiElements["C2D04"];
                     UIHelper.SetElementBGRect(currItem, new Rectangle((int)currItem.Position.X, (int)currItem.Position.Y, 500, 150));
 
-                    uI.AddTextBlock(UIHelper.CreateTextblock("C2D14", "I don't know man. Probably not, things \naren't what they were and they never will be.", responderRect.X - 400, responderRect.Y - 175));
+                    uI.AddTextBlock(UIHelper.CreateTextblock("C2D14", "I don't know man. Probably not, things \naren't what they were and they never \nwill be.", responderRect.X - 400, responderRect.Y - 175));
                     currItem = (UITextBlock)uI.uiElements["C2D14"];
                     UIHelper.SetElementBGRect(currItem, new Rectangle((int)currItem.Position.X, (int)currItem.Position.Y, 500, 150));
 
