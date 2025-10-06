@@ -328,7 +328,9 @@ namespace GameJam_KoganDev.Scripts.UI
         {
             switch (keyWord)
             {
-
+                case "SkillSelection":
+                    UIHelper.SetElementRect(uiElements["SkillSelection"], new Rectangle((int)(currBounds.Width - 960), currBounds.Y + 50, 200, 50));
+                    break;
             }
 
         }

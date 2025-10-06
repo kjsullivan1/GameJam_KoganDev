@@ -236,6 +236,7 @@ namespace GameJam_KoganDev
             gameLevel++;
             gameState = GameStates.inGame;
             UIHelper.SetElementVisibility("SkillSelection", true, UIManager.uiElements);
+            UIHelper.SetElementVisibility("BeatLevel", false, UIManager.uiElements);
 
             enemies.Clear();
             createdEnemies = 0;
@@ -281,6 +282,8 @@ namespace GameJam_KoganDev
                     AddAndPlaySound("acceptance0Theme", true);
                     break;
             }
+
+            UpdateSkillPos(new Rectangle(currBounds.X, currBounds.Y, currBounds.Width, currBounds.Height));
         }
 
         protected override void Update(GameTime gameTime)
@@ -398,6 +401,7 @@ namespace GameJam_KoganDev
                         {
                             levelBuilder.CreateNewSection((camera.viewport.Height * player.levelIn), gameLevel);
                             mapBuilder.yMapDims.Add(levelBuilder.gameMap);
+                            UpdateSkillPos(new Rectangle(currBounds.X, currBounds.Y - currBounds.Height, currBounds.Width, currBounds.Height));
 
                             mapBuilder.Refresh(new List<int[,]>(mapBuilder.yMapDims), pixelSize, camera.viewport.Width, camera.viewport.Height);
                             //camera.Position = new Vector2(camera.Position.X, 0 - (camera.viewport.Height/2 * player.levelIn));
@@ -637,6 +641,11 @@ namespace GameJam_KoganDev
                 base.Update(gameTime);
         }
 
+        public void UpdateSkillPos(Rectangle bounds)
+        {
+            UIManager.UpdateTextBlock("SkillSelection", bounds);
+        }
+
         public void AddAndPlaySound(string fileName, bool isLoop)
         {
             soundManager.StopCurrSounds();
@@ -688,7 +697,7 @@ namespace GameJam_KoganDev
             this.IsMouseVisible = true;
             ms = Mouse.GetState();
 
-            UIManager.UpdateTextBlock("MainMenuTitle", Rectangle.Empty);
+            //UIManager.UpdateTextBlock("MainMenuTitle", Rectangle.Empty);
 
             //bool hitButton = false;
 
@@ -767,7 +776,7 @@ namespace GameJam_KoganDev
                             GraphicsDevice.Clear(Color.RoyalBlue);
                             break;
                         case 3:
-                            GraphicsDevice.Clear(Color.Crimson);
+                            GraphicsDevice.Clear(Color.DarkRed);
                             break;
                         case 4:
                             GraphicsDevice.Clear(Color.ForestGreen);
@@ -813,8 +822,8 @@ namespace GameJam_KoganDev
                             playerColor = Color.RoyalBlue;
                             break;
                         case 3:
-                            GraphicsDevice.Clear(Color.Crimson);
-                            playerColor = Color.Crimson;
+                            GraphicsDevice.Clear(Color.DarkRed);
+                            playerColor = Color.DarkRed;
                             break;
                         case 4:
                             GraphicsDevice.Clear(Color.ForestGreen);
@@ -846,7 +855,7 @@ namespace GameJam_KoganDev
                             minRate = .60f;
                             break;
                         case 3:
-                            GraphicsDevice.Clear(Color.Crimson);
+                            GraphicsDevice.Clear(Color.DarkRed);
                             minRate = .60f;
                             break;
                         case 4:

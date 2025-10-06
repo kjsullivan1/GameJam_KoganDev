@@ -417,6 +417,7 @@ namespace GameJam_KoganDev.Scripts
                 //velocity.Y += jumpForce;
                 PlayerRect = new Rectangle(playerRect.X, playerRect.Y - (playerRect.Height + 2), playerRect.Width, playerRect.Height);
                 game.enemyStartPos = position;
+                game.UpdateSkillPos(new Rectangle(game.currBounds.X, game.currBounds.Y - (game.currBounds.Height), game.currBounds.Width, game.currBounds.Height));
             }
             if(playerRect.Y > minPosY && playerRect.Bottom < heightBounds)
             {
@@ -435,6 +436,7 @@ namespace GameJam_KoganDev.Scripts
                 {
                     //Die
                 }
+                 game.UpdateSkillPos(new Rectangle(game.currBounds.X, game.currBounds.Y + (game.currBounds.Height) , game.currBounds.Width, game.currBounds.Height));
             }
 
             if(playerRect.Bottom > heightBounds)
